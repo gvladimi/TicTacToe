@@ -1,0 +1,162 @@
+# TicTacToe by Gene Vladimirov
+
+# Displays the board
+def print_board(B):
+    print('  ' + B[0] + '  |  ' + B[1] + '  |  ' + B[2])
+    print('-----------------')
+    print('  ' + B[3] + '  |  ' + B[4] + '  |  ' + B[5])
+    print('-----------------')
+    print('  ' + B[6] + '  |  ' + B[7] + '  |  ' + B[8])
+
+# Checks for wining position 
+def check_win(B, m):
+    return ((B[0] == m and B[1] == m and B[2] == m) or  
+            (B[3] == m and B[4] == m and B[5] == m) or  
+            (B[6] == m and B[7] == m and B[8] == m) or  
+            (B[0] == m and B[3] == m and B[6] == m) or  
+            (B[1] == m and B[4] == m and B[7] == m) or  
+            (B[2] == m and B[5] == m and B[8] == m) or  
+            (B[0] == m and B[4] == m and B[8] == m) or  
+            (B[2] == m and B[4] == m and B[6] == m))   
+
+# Checks for draw/full board
+def check_draw(B):
+    return ' ' not in B
+
+# Creates copy of the board for optimal move calculation
+def board_copy(B):
+    dupeBoard = []
+    for j in B:
+        dupeBoard.append(j)
+    return dupeBoard
+
+# Computer seeks winning move
+def test_winner(B, mark, i): 
+    bCopy = board_copy(B)
+    bCopy[i] = mark
+    return check_win(bCopy, mark)
+
+# Computer tests for fork move
+def test_fork(B, mark, i):
+    bCopy = board_copy(B)
+    bCopy[i] = mark
+    winning_moves = 0
+    for j in range(0, 9):
+        if test_winner(bCopy, mark, j) and bCopy[j] == ' ':
+            winning_moves += 1
+    return winning_moves >= 2
+
+# This AI follows the optimal Tictactoe Algorithm:
+# 1. Check for winning move
+# 2. Check for win-blocking move
+# 3. Create a fork opportunity
+# 4. Block player fork opportunity
+# 5. Play center
+# 6. Play corner
+# 7. Play a side
+
+def get_computer_move(B):
+    print "This is the computer's move:"
+    for i in range(0, 9):
+        if B[i] == ' ' and test_winner(B, 'X', i):
+            return i
+    for i in range(0, 9):
+        if B[i] == ' ' and test_winner(B, 'O', i):
+            return i
+    for i in range(0, 9):
+        if B[i] == ' ' and test_fork(B, 'X', i):
+            return i
+    player_forks = 0
+    for i in range(0, 9):
+        if B[i] == ' ' and test_fork(B, 'O', i):
+            player_forks += 1
+            test_move = i
+    if player_forks == 1:
+        return test_move
+    elif player_forks == 2:
+        for j in [1, 3, 5, 7]:
+            if B[j] == ' ':
+                return j
+    if B[4] == ' ':
+        return 4
+    for i in [0, 2, 6, 8]:
+        if B[i] == ' ':
+            return i
+    for i in [1, 3, 5, 7]:
+        if B[i] == ' ':
+            return i
+
+def valid_move(board):
+    while True:
+        print "Your Turn. Choose a spot on the board (0-8): "
+        try:
+            move = int(raw_input())
+            if move not in range(0,9):
+                print "Please enter a number between 0 & 8:"
+                continue
+            if board[move] != ' ':
+                print "That spot is taken!"
+                continue
+            return move
+        except ValueError:
+            print "That wasn't a number"
+
+
+playing = True
+while playing:
+    game_on = True
+    board = [' '] * 9
+    print "Welcome to Tic Tac Toe!"
+    print "These numbers represent each spot on the board:"
+    print "  0  |  1  |  2  " 
+    print "-----------------" 
+    print "  3  |  4  |  5  " 
+    print "-----------------" 
+    print "  6  |  7  |  8  "  
+
+
+    first_player = raw_input("Would you like to start? Y/N ").lower()
+    while first_player != "y" and first_player !="n":
+        print "Please enter Y or N"
+        first_player = str(raw_input("Would you like to start? Y/N ")).lower()
+    if first_player == 'y':
+        player_mark = 'O'
+    else:
+        player_mark = 'X'
+    print_board(board)
+
+    while game_on:
+        if player_mark == 'O':
+           move = valid_move(board)
+        else:
+            move = get_computer_move(board)
+
+        board[move] = player_mark
+
+        if check_win(board, player_mark):
+            game_on = False
+            print_board(board)
+            if player_mark == 'O':
+                print('You win!')
+            else:
+                print('Skynet has won!')
+            continue        
+
+        if check_draw(board):
+            game_on = False
+            print_board(board)
+            print('It was a draw!')
+            continue
+        
+        print_board(board)
+
+        if player_mark == 'O':
+            player_mark = 'X'
+        else:
+            player_mark = 'O'
+
+
+    print(" Would you like to keep playing?")
+    keep_playing = raw_input()
+    if keep_playing != 'y' and keep_playing != 'Y':
+        playing = False
